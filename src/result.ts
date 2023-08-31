@@ -173,8 +173,6 @@ export class ErrImpl<E> implements BaseResult<never, E> {
 
     readonly error!: E;
 
-    private readonly _stack!: string;
-
     [Symbol.iterator](): Iterator<never, never, any> {
         return {
             next(): IteratorResult<never, never> {
@@ -189,13 +187,6 @@ export class ErrImpl<E> implements BaseResult<never, E> {
         }
 
         this.error = val;
-
-        const stackLines = new Error().stack!.split('\n').slice(2);
-        if (stackLines && stackLines.length > 0 && stackLines[0].includes('ErrImpl')) {
-            stackLines.shift();
-        }
-
-        this._stack = stackLines.join('\n');
     }
 
     /**
@@ -214,7 +205,7 @@ export class ErrImpl<E> implements BaseResult<never, E> {
         // The cause casting required because of the current TS definition being overly restrictive
         // (the definition says it has to be an Error while it can be anything).
         // See https://github.com/microsoft/TypeScript/issues/45167
-        throw new Error(`${msg} - Error: ${toString(this.error)}\n${this._stack}`, { cause: this.error as any });
+        throw new Error(`${msg} - Error: ${toString(this.error)}`, { cause: this.error as any });
     }
 
     expectErr(_msg: string): E {
@@ -225,7 +216,7 @@ export class ErrImpl<E> implements BaseResult<never, E> {
         // The cause casting required because of the current TS definition being overly restrictive
         // (the definition says it has to be an Error while it can be anything).
         // See https://github.com/microsoft/TypeScript/issues/45167
-        throw new Error(`Tried to unwrap Error: ${toString(this.error)}\n${this._stack}`, { cause: this.error as any });
+        throw new Error(`Tried to unwrap Error: ${toString(this.error)}`, { cause: this.error as any });
     }
 
     unwrapErr(): E {
@@ -266,10 +257,6 @@ export class ErrImpl<E> implements BaseResult<never, E> {
 
     toString(): string {
         return `Err(${toString(this.error)})`;
-    }
-
-    get stack(): string | undefined {
-        return `${this}\n${this._stack}`;
     }
 }
 
